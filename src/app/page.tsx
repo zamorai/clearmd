@@ -1,95 +1,124 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import MainHeroSection from '@/components/MainHeroSection';
+import SalaryComparison from '@/components/SalaryComparison';
+import CallToAction from '@/components/CallToAction';
+import { supabase } from '../../lib/supabaseClient';
+
+export default function HomePage() {
+  const [selectedSpecialty, setSelectedSpecialty] = useState('');
+  const [selectedSubspecialty, setSelectedSubspecialty] = useState('');
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [subspecialties, setSubspecialties] = useState<string[]>([]);
+  const [stats, setStats] = useState({
+    averageSalary: '$0',
+    topLocation: '-',
+    popularSubspecialty: '-',
+    dataPoints: '0',
+  });
+
+  useEffect(() => {
+    fetchSpecialties();
+  }, []);
+
+  useEffect(() => {
+    if (selectedSpecialty) {
+      fetchSubspecialties(selectedSpecialty);
+      fetchStats(selectedSpecialty, selectedSubspecialty);
+    }
+  }, [selectedSpecialty, selectedSubspecialty]);
+
+  const fetchSpecialties = async () => {
+    const { data, error } = await supabase
+      .from('salaries')
+      .select('specialty')
+      .not('specialty', 'is', null);
+    
+    if (error) {
+      console.error('Error fetching specialties:', error);
+    } else {
+      const uniqueSpecialties = [...new Set(data.map(item => item.specialty))].sort();
+      setSpecialties(uniqueSpecialties);
+    }
+  };
+
+  const fetchSubspecialties = async (specialty: string) => {
+    const { data, error } = await supabase
+      .from('salaries')
+      .select('subspecialty')
+      .eq('specialty', specialty)
+      .not('subspecialty', 'is', null);
+    
+    if (error) {
+      console.error('Error fetching subspecialties:', error);
+    } else {
+      const uniqueSubspecialties = [...new Set(data.map(item => item.subspecialty))].sort();
+      setSubspecialties(uniqueSubspecialties);
+    }
+  };
+
+  const fetchStats = async (specialty: string, subspecialty: string | null) => {
+    let query = supabase
+      .from('salaries')
+      .select('*')
+      .eq('specialty', specialty);
+
+    if (subspecialty) {
+      query = query.eq('subspecialty', subspecialty);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching stats:', error);
+    } else {
+      // Calculate stats
+      const averageSalary = data.reduce((sum, item) => sum + item.salary, 0) / data.length;
+      
+      const locationCounts = data.reduce((acc, item) => {
+        acc[item.location] = (acc[item.location] || 0) + 1;
+        return acc;
+      }, {});
+      
+      const topLocation = Object.entries(locationCounts)
+        .sort(([,a], [,b]) => b - a)[0]?.[0] || '-';
+
+      const subspecialtyCounts = data.reduce((acc, item) => {
+        if (item.subspecialty) {
+          acc[item.subspecialty] = (acc[item.subspecialty] || 0) + 1;
+        }
+        return acc;
+      }, {});
+
+      const popularSubspecialty = Object.entries(subspecialtyCounts)
+        .sort(([,a], [,b]) => b - a)[0]?.[0] || '-';
+
+      setStats({
+        averageSalary: `$${Math.round(averageSalary).toLocaleString()}`,
+        topLocation,
+        popularSubspecialty,
+        dataPoints: data.length.toString(),
+      });
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="min-h-screen bg-soft-gray">
+      <MainHeroSection
+        specialties={specialties}
+        subspecialties={subspecialties}
+        selectedSpecialty={selectedSpecialty}
+        selectedSubspecialty={selectedSubspecialty}
+        onSpecialtyChange={setSelectedSpecialty}
+        onSubspecialtyChange={setSelectedSubspecialty}
+        stats={stats}
+      />
+      <SalaryComparison
+        selectedSpecialty={selectedSpecialty}
+        selectedSubspecialty={selectedSubspecialty}
+      />
+      <CallToAction />
     </div>
   );
 }
