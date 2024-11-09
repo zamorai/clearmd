@@ -1,0 +1,2 @@
+- make sure subspecialty filter updates the main page data
+- add a default value to the main page

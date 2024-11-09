@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { useSearchParams } from 'next/navigation';
 
-import { Menu } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { 
   BarChart, 
@@ -25,6 +25,8 @@ import {
   Building2, 
   GraduationCap 
 } from 'lucide-react';
+import SpecialtySelector from './SpecialtySelector';
+import { useSpecialtyAndSubspecialtyIds } from '../hooks/useSpecialtyData';
 
 const StatCard = ({ title, value, description, icon: Icon, trend = null }) => (
   <div className="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition duration-200">
@@ -66,46 +68,42 @@ const formatYAxis = (value) => {
 };
 
 const AggregatedCompensationView: React.FC = () => {
-  const [specialties, setSpecialties] = useState<string[]>([]);
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string>('');
+  const router = useSearchParams();
+  const specialtyName = router.get('specialty') ?? null;
+  const subspecialtyName = router.get('subspecialty') ?? null;
+  const { specialtyId, subspecialtyId, loading, error } = useSpecialtyAndSubspecialtyIds(specialtyName, subspecialtyName);
+  const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<string | null>(null);
+  const [selectedSubspecialtyId, setSelectedSubspecialtyId] = useState<string | null>(subspecialtyId || null);
   const [aggregatedData, setAggregatedData] = useState<any>(null);
 
   useEffect(() => {
-    fetchSpecialties();
-  }, []);
+    if (specialtyId) {
+      setSelectedSpecialtyId(specialtyId)
+      setSelectedSubspecialtyId(subspecialtyId)
+      fetchAggregatedData(specialtyId, subspecialtyId);
+    }
+  }, [specialtyId, subspecialtyId]);
 
   useEffect(() => {
-    if (selectedSpecialty) {
-      fetchAggregatedData();
+    if (selectedSpecialtyId) {
+      fetchAggregatedData(selectedSpecialtyId, selectedSubspecialtyId);
     }
-  }, [selectedSpecialty]);
+  }, [selectedSpecialtyId, selectedSubspecialtyId]);
 
-  const fetchSpecialties = async () => {
-    const { data, error } = await supabase
-      .from('salaries')
-      .select('specialty')
-      .not('specialty', 'is', null)
-      .then(result => {
-        // Get unique values using a Set
-        const uniqueSpecialties = [...new Set(result.data?.map(item => item.specialty))].sort();
-        return { data: uniqueSpecialties, error: result.error };
-      });
-    
-    if (error) {
-      console.error('Error fetching specialties:', error);
-    } else {
-      setSpecialties(data || []);
-    }
-  };
-
-  const fetchAggregatedData = async () => {
-    const { data, error } = await supabase
+  const fetchAggregatedData = async (specialtyId: string, subspecialtyId: string | null) => {
+    let query = supabase
       .from('salaries')
       .select('*')
-      .eq('specialty', selectedSpecialty);
+      .eq('specialty_id', specialtyId);
+    
+    if (subspecialtyId) {
+      query = query.eq('subspecialty_id', subspecialtyId);
+    }
+    
+    const { data, error } = await query;
     
     if (error) {
-      console.error('Error fetching aggregated data:', error);
+      console.error('Error fetching data:', error);
     } else {
       processAggregatedData(data);
     }
@@ -140,39 +138,23 @@ const AggregatedCompensationView: React.FC = () => {
 
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
+    <div className="w-full">
       {/* Header Section */}
-      <div className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {selectedSpecialty || 'Select a Specialty'}
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Comprehensive compensation data and insights
-          </p>
-        </div>
-        <Menu as="div" className="relative">
-          <Menu.Button className="inline-flex justify-between items-center w-64 rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-            {selectedSpecialty || 'Select Specialty'}
-            <ChevronDownIcon className="h-5 w-5 text-gray-400" />
-          </Menu.Button>
-          <Menu.Items className="absolute right-0 mt-2 w-64 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
-            {specialties.map((specialty) => (
-              <Menu.Item key={specialty}>
-                {({ active }) => (
-                  <button
-                    className={`${
-                      active ? 'bg-gray-50' : ''
-                    } w-full text-left px-4 py-2 text-sm text-gray-900`}
-                    onClick={() => setSelectedSpecialty(specialty)}
-                  >
-                    {specialty}
-                  </button>
-                )}
-              </Menu.Item>
-            ))}
-          </Menu.Items>
-        </Menu>
+
+        <div className="max-w-7xl mx-auto pb-6">
+    
+          
+          {/* Filters Section */}
+          <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            <SpecialtySelector
+              selectedSpecialty={selectedSpecialtyId}
+              selectedSubspecialty={selectedSubspecialtyId}
+              onSpecialtyChange={setSelectedSpecialtyId}
+              onSubspecialtyChange={setSelectedSubspecialtyId}
+              className="flex-1"
+            />
+          </div>
+ 
       </div>
 
       {aggregatedData && (

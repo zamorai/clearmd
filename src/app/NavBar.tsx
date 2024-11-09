@@ -136,56 +136,54 @@ const SpecialtiesPopover = () => {
 
       {isOpen && (
         <PopoverPanel
-          static
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          className="absolute left-0 top-full z-10 mt-3 w-screen max-w-4xl overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5"
+  static
+  onMouseEnter={handleMouseEnter}
+  onMouseLeave={handleMouseLeave}
+  className="absolute left-0 top-full z-10 mt-2 w-screen max-w-2xl overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-gray-900/5"
+>
+  <div className="px-3 pt-4 pb-4">
+    <div className="grid grid-cols-3 gap-x-4 gap-y-1">
+      {columns.map((column, columnIndex) => (
+        <div key={columnIndex}>
+          {column.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className="group flex items-center gap-x-3 py-2 px-3 text-sm text-gray-700"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex h-6 w-6 flex-none items-center justify-center">
+                <item.icon className="h-4 w-4 text-gray-400 group-hover:text-gray-900"/>
+              </div>
+              <span className="group-hover:text-gray-900">
+                {item.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+  
+  <div className="bg-gray-100">
+    <div className="grid grid-cols-2 divide-x divide-gray-900/5">
+      {callsToAction.map((item) => (
+        <Link
+          key={item.name}
+          href={item.href}
+          className="flex items-center justify-center gap-x-2.5 px-3 py-4 text-sm font-medium text-gray-900 hover:bg-gray-200"
+          onClick={() => setIsOpen(false)}
         >
-          <div className="p-5">
-            <div className="grid grid-cols-3 gap-x-2">
-              {columns.map((column, columnIndex) => (
-                <div key={columnIndex} className="space-y-2">
-                  {column.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="group flex items-center gap-x-4 rounded-lg p-4 text-sm leading-6 hover:bg-gray-50 transition duration-150"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-gray-50/75 group-hover:bg-white group-hover:shadow-sm">
-                        <item.icon className={`h-5 w-5 text-gray-600 group-hover:text-vibrant-teal transition-colors`}/>
-                      </div>
-                      <div className="flex-auto">
-                        <span className="text-sm font-semibold text-gray-900 group-hover:text-vibrant-teal transition-colors">
-                          {item.name}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="bg-gray-50">
-            <div className="grid grid-cols-2 divide-x divide-gray-900/5">
-              {callsToAction.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center justify-center gap-x-2.5 p-4 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100 transition duration-150"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <item.icon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </PopoverPanel>
-      )}
-    </Popover>
-  )
+          <item.icon className="h-4 w-4 flex-none text-gray-400" />
+          {item.name}
+        </Link>
+      ))}
+    </div>
+  </div>
+  </PopoverPanel>
+  )}
+</Popover>
+)
 }
 
 export default function NavBar() {
@@ -198,7 +196,7 @@ export default function NavBar() {
           <Link href="/" className="flex items-center">
             <span className="sr-only">ClearMD</span>
             <img
-              className="h-8 w-auto"
+              className="h-6 w-auto"
               src="/logo-large.png"
               alt="ClearMD Logo"
             />

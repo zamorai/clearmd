@@ -1,0 +1,178 @@
+// Homepage Structure
+interface HomepageLayout {
+  heroSection: {
+    quickStats: {
+      totalSubmissions: number,
+      averageSalaryIncrease: string, // "12% YoY"
+      topEarningSpecialties: Array<string>,
+      genderPayGap: string // "Female physicians earn 82¢ per $1"
+    },
+    callToAction: {
+      primary: "Compare Salaries",
+      secondary: "Add Your Salary"
+    }
+  },
+
+  trendingInsights: [
+    {
+      title: "Emerging Subspecialties",
+      description: "Fastest growing specialties by compensation",
+      link: "/insights/emerging-specialties"
+    },
+    {
+      title: "Geographic Arbitrage",
+      description: "Best paying locations adjusted for cost of living",
+      link: "/insights/geographic-analysis"
+    }
+  ],
+
+  careerPathways: {
+    // Interactive career progression visualization
+    component: "SankeyDiagram",
+    data: "career_transitions.json",
+    onClick: (node) => navigate(`/career-paths/${node.id}`)
+  },
+
+  compensationBreakdown: {
+    // Comparative visualization
+    component: "TreeMap",
+    sections: [
+      "Base Salary",
+      "Clinical Bonuses",
+      "Academic Income",
+      "Industry Income"
+    ]
+  }
+}
+
+// Detailed Views Structure
+interface DetailedViews {
+  bySpecialty: {
+    mainMetrics: [
+      "Total Compensation Range",
+      "Experience-Based Growth",
+      "Gender Distribution",
+      "Work-Life Balance Score"
+    ],
+    comparisons: [
+      "vs. Similar Specialties",
+      "vs. National Average",
+      "vs. Previous Year"
+    ],
+    deepDives: {
+      productivityMetrics: {
+        RVUs: "Relative Value Units analysis",
+        patientVolume: "Patient load distribution",
+        procedureVolume: "Procedure frequency & compensation"
+      },
+      careerProgression: {
+        experienceLadder: "Pay by years of experience",
+        positionTransitions: "Common career moves",
+        timeToPartnership: "Partnership timeline"
+      },
+      geographicAnalysis: {
+        compensationHeatmap: "US heat map by region",
+        costAdjustedRankings: "Top locations by real income",
+        urbanVsRural: "Urban/rural compensation divide"
+      }
+    }
+  }
+}
+
+AI Integration Ideas:
+
+typescriptCopyinterface AIFeatures {
+  personalizedInsights: {
+    // Career Path Optimization
+    careerAdvisor: {
+      input: {
+        currentPosition: string,
+        yearsExperience: number,
+        preferences: string[]
+      },
+      output: {
+        recommendedPaths: Path[],
+        projectedEarnings: number[],
+        requiredSteps: string[]
+      }
+    },
+    
+    // Negotiation Assistant
+    compensationNegotiator: {
+      features: [
+        "Market position analysis",
+        "Compensation package evaluation",
+        "Negotiation strategy suggestions",
+        "Contract term comparisons"
+      ]
+    },
+    
+    // Competitive Analysis
+    marketPositioning: {
+      analysis: [
+        "Peer group comparison",
+        "Performance metrics benchmarking",
+        "Geographic opportunity scoring",
+        "Career trajectory prediction"
+      ]
+    }
+  },
+
+  dataAnalysis: {
+    // Pattern Recognition
+    trendPrediction: {
+      models: [
+        "Specialty demand forecasting",
+        "Compensation trend analysis",
+        "Geographic opportunity identification",
+        "Emerging subspecialty detection"
+      ]
+    },
+    
+    // Custom Reports
+    insightGenerator: {
+      reports: [
+        "Career optimization strategies",
+        "Location-based opportunities",
+        "Work-life balance analysis",
+        "Income diversification recommendations"
+      ]
+    }
+  },
+
+  interactiveTools: {
+    // Chatbot Career Advisor
+    careerGPT: {
+      capabilities: [
+        "Compensation negotiation coaching",
+        "Career path planning",
+        "Market trend analysis",
+        "Contract review assistance"
+      ]
+    },
+    
+    // Visual Data Explorer
+    dataVisualizer: {
+      features: [
+        "Custom comparison charts",
+        "Geographic heat maps",
+        "Career trajectory modeling",
+        "Peer group benchmarking"
+      ]
+    }
+  }
+}
+
+Novel AI Applications:
+
+
+Career Path Simulator: Uses historical data to simulate different career choices and their outcomes
+Contract Analysis: AI reviews employment contracts and suggests negotiations
+Compensation Package Optimizer: Suggests optimal mix of salary/benefits based on personal preferences
+Practice Viability Analyzer: Evaluates potential practice locations based on multiple factors
+Skills Value Calculator: Associates specific skills/procedures with compensation increases
+Mentor Matching: Connects users with similar career paths for mentorship
+Market Timing Advisor: Suggests optimal times for career moves based on market conditions
+
+This would create a comprehensive platform that not only collects data but provides actionable insights and career guidance.
+Let me know if you want me to expand on any of these areas!

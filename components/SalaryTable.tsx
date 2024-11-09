@@ -394,7 +394,7 @@ const SalaryTable: React.FC<SalaryTableProps> = ({ data, itemsPerPage = 40 }) =>
   };
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
+    <div className="bg-white max-w-4xl shadow rounded-lg overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100">

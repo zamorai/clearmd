@@ -1,78 +1,169 @@
 'use client';
 
+import { CompensationSection, ExperienceSection, OptionalSection, SpecialtySection } from '@/components/form/FormSections';
 import { 
   ShieldCheckIcon, 
   UserGroupIcon, 
   BuildingOffice2Icon,
-  XCircleIcon,
-  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Formik, Form, Field } from 'formik';
 import { useState } from 'react';
 import * as Yup from 'yup';
 import { supabase } from '../../../lib/supabaseClient';
+import { useRouter } from 'next/navigation'
 
-const validationSchema = Yup.object({
-  specialty: Yup.string().required('Required'),
-  subspecialty: Yup.string(),
-  position: Yup.string().required('Required'),
-  category: Yup.string().required('Required'),
-  baseSalary: Yup.number()
-    .required('Required')
-    .positive('Must be a positive number'),
-  rvuCompensation: Yup.number()
-    .min(0, 'Must be 0 or greater'),
-  bonusCompensation: Yup.number()
-    .min(0, 'Must be 0 or greater'),
-  partnershipStake: Yup.number()
-    .min(0, 'Must be 0 or greater'),
-  location: Yup.string().required('Required'),
+const validationSchema = Yup.object().shape({
+  // Specialty Section
+  specialty: Yup.string()
+    .uuid('Invalid specialty ID')
+    .required('Specialty is required'),
+  subspecialty: Yup.string()
+    .uuid('Invalid subspecialty ID')
+    .nullable(),
+  jobFamily: Yup.string()
+    .uuid('Invalid job family ID')
+    .required('Job family is required'),
+  position: Yup.string()
+    .uuid('Invalid position ID')
+    .required('Position is required'),
+
+  // Experience Section
+  yearsInPosition: Yup.number()
+    .required('Years in position is required')
+    .min(0, 'Must be 0 or greater')
+    .integer('Must be a whole number')
+    .max(100, 'Please enter a realistic value'),
   yearsExperience: Yup.number()
-    .required('Required')
+    .required('Total years of experience is required')
     .min(0, 'Must be 0 or greater')
-    .integer('Must be a whole number'),
-  institution: Yup.string(),
-  workHoursPerWeek: Yup.number()
-    .min(0, 'Must be 0 or greater')
-    .max(168, 'Must be less than 168'),
-  callDaysPerMonth: Yup.number()
-    .min(0, 'Must be 0 or greater')
-    .max(31, 'Must be less than 31'),
+    .integer('Must be a whole number')
+    .max(100, 'Please enter a realistic value')
+    .test('more-than-position', 'Cannot be less than years in position', 
+      function(value) {
+        return !value || !this.parent.yearsInPosition || 
+          value >= this.parent.yearsInPosition;
+    }),
+  location: Yup.object().shape({
+    display: Yup.string()
+      .required('Location is required'),
+    city: Yup.string()
+      .required('Please select a valid city from the suggestions'),
+    state: Yup.string()
+      .required('State is required'),
+    country: Yup.string()
+      .required('Country is required')
+  }).required('Location is required'),
+
+  // Compensation Section
+  baseSalary: Yup.number()
+    .required('Base salary is required')
+    .positive('Must be a positive number'),
+  salaryType: Yup.string()
+    .oneOf(['annually', 'hourly'], 'Invalid salary type')
+    .required('Salary type is required'),
+  bonusCompensation: Yup.number()
+    .nullable()
+    .min(0, 'Must be 0 or greater'),
+
+  // Optional Section
+  gender: Yup.string()
+    .oneOf(['male', 'female', 'other', 'prefer_not_to_say'], 'Invalid gender selection')
+    .nullable(),
 });
 
 export default function SubmitSalaryPage() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [currentSection, setCurrentSection] = useState(1);
+  const router = useRouter();
 
-  const handleSubmit = async (values, { resetForm }) => {
+  const handleSubmit = async (values) => {
     try {
-      const { error } = await supabase.from('salaries').insert([{
-        specialty: values.specialty,
-        subspecialty: values.subspecialty,
-        position: values.position,
-        category: values.category,
-        base_salary: values.baseSalary,
-        rvu_compensation: values.rvuCompensation,
-        bonus_compensation: values.bonusCompensation,
-        partnership_stake: values.partnershipStake,
-        location: values.location,
-        years_experience: values.yearsExperience,
-        institution: values.institution,
-        work_hours_per_week: values.workHoursPerWeek,
-        call_days_per_month: values.callDaysPerMonth,
-        total_compensation: values.baseSalary + 
-          (values.rvuCompensation || 0) + 
-          (values.bonusCompensation || 0) + 
-          (values.partnershipStake || 0),
-      }]);
+      const { data: existingLocation } = await supabase
+        .from('locations')
+        .select('id')
+        .match({
+          city: values.location.city,
+          state: values.location.state,
+          country: values.location.country
+        })
+        .single();
 
-      if (error) throw error;
+      let locationId;
+
+      if (existingLocation) {
+        locationId = existingLocation.id;
+      } else {
+        const { data: newLocation, error: locationError } = await supabase
+          .from('locations')
+          .insert({
+            city: values.location.city,
+            state: values.location.state,
+            country: values.location.country
+          })
+          .select()
+          .single();
+
+        if (locationError) throw locationError;
+        locationId = newLocation.id;
+      }
+  
+      // Then insert salary data
+      const { error: salaryError } = await supabase
+        .from('salaries')
+        .insert({
+          specialty_id: values.specialty,
+          subspecialty_id: values.subspecialty || null,
+          location_id: locationId,
+          position_id: values.position,
+          category_id: values.jobFamily,
+          base_salary: Number(values.baseSalary),
+          bonus: values.bonusCompensation ? Number(values.bonusCompensation) : null,
+          years_experience: Number(values.yearsExperience),
+          gender: values.gender || null
+        });
+  
+      if (salaryError) throw salaryError;
+      
       setSubmitStatus('success');
-      resetForm();
+      router.push('/');
     } catch (error) {
       console.error('Error submitting salary:', error);
       setSubmitStatus('error');
     }
   };
+
+  const isSpecialtyComplete = values => {
+    
+    if (
+    values.specialty && 
+    values.jobFamily && 
+    values.position ) {
+      setCurrentSection(2)
+      return true;
+    }
+    return false;
+  };
+
+  const isExperienceComplete = values => {
+    if (
+    values.yearsInPosition &&
+    values.yearsExperience &&
+    values.location.display
+  ) {
+    setCurrentSection(3)
+    return true;
+  }
+};
+
+  const isCompensationComplete = values => {
+    if (
+    values.baseSalary &&
+    values.salaryType
+  ) {
+    setCurrentSection(4)
+    return true;
+  }
+    };
 
   return (
 <div className="relative isolate bg-white">
@@ -150,215 +241,70 @@ export default function SubmitSalaryPage() {
         <div className="relative px-6 pb-24 pt-20 sm:pb-24 lg:px-8 lg:py-32">
           <div className="mx-auto max-w-xl lg:mr-0 lg:max-w-lg">
           <Formik
-          initialValues={{
-            specialty: '',
-            subspecialty: '',
-            position: '',
-            category: '',
-            baseSalary: '',
-            rvuCompensation: '',
-            bonusCompensation: '',
-            partnershipStake: '',
-            location: '',
-            yearsExperience: '',
-            institution: '',
-            workHoursPerWeek: '',
-            callDaysPerMonth: '',
-          }}
-          validationSchema={validationSchema}
-          onSubmit={handleSubmit}
-        >
-              {({ isSubmitting, errors, touched }) => (
-                <Form className="space-y-6">
-                 <div className="mx-auto max-w-xl lg:mr-0 lg:max-w-lg">
-                <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
-                  <div className="">
-                    <label htmlFor="specialty" className="block text-sm font-semibold leading-6 text-gray-900">
-                      Specialty
-                    </label>
-                    <div className="mt-2.5">
-                      <Field
-                        type="text"
-                        name="specialty"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      />
-                      {errors.specialty && touched.specialty && (
-                        <div className="text-red-500 text-sm mt-1">{errors.specialty}</div>
-                      )}
-                    </div>
-                  </div>
+            initialValues={{
+              specialty: '',
+              subspecialty: '',
+              jobFamily: '',
+              position: '',
+              yearsInPosition: '',
+              yearsExperience: '',
+              location: {
+                display: '',
+                city: '',
+                state: '',
+                country: ''
+              },
+              baseSalary: '',
+              salaryType: '',
+              bonusCompensation: '',
+              gender: '',
+            }}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ values, errors, touched, isSubmitting, isValid }) => (
+              <Form className="space-y-8">
+                <SpecialtySection 
+                  isVisible={currentSection >= 1}
+                  values={values}
+                  errors={errors}
+                  touched={touched}
+                />
+                {isSpecialtyComplete(values) && (
+                  <ExperienceSection 
+                    isVisible={currentSection >= 2}
+                    errors={errors}
+                    touched={touched}
+                  />
+                )}
+                
+                {isExperienceComplete(values) && (
+                  <CompensationSection 
+                    isVisible={currentSection >= 3}
+                    values={values}
+                  />
+                )}
+                
+                {isCompensationComplete(values) && (
+                  <OptionalSection 
+                    isVisible={currentSection >= 4}
+                  />
+                )}
 
-                  <div className="">
-                    <label htmlFor="subspecialty" className="block text-sm font-semibold leading-6 text-gray-900">
-                      Subspecialty (optional)
-                    </label>
-                    <div className="mt-2.5">
-                      <Field
-                        type="text"
-                        name="subspecialty"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label htmlFor="category" className="block text-sm font-semibold leading-6 text-gray-900">
-                      Position
-                    </label>
-                    <div className="mt-2.5">
-                      <Field
-                        as="select"
-                        name="category"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      >
-                        <option value="">Select a category</option>
-                        <option value="academia">Academia</option>
-                        <option value="hospital">Hospital</option>
-                        <option value="private_practice">Private Practice</option>
-                        <option value="research">Research</option>
-                      </Field>
-                      {errors.category && touched.category && (
-                        <div className="text-red-500 text-sm mt-1">{errors.category}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="baseSalary" className="block text-sm font-semibold leading-6 text-gray-900">
-                      Base Salary ($)
-                    </label>
-                    <div className="mt-2.5">
-                      <Field
-                        type="number"
-                        name="baseSalary"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      />
-                      {errors.baseSalary && touched.baseSalary && (
-                        <div className="text-red-500 text-sm mt-1">{errors.baseSalary}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="rvuCompensation" className="block text-sm font-semibold leading-6 text-gray-900">
-                      RVU Compensation ($)
-                    </label>
-                    <div className="mt-2.5">
-                      <Field
-                        type="number"
-                        name="rvuCompensation"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="bonusCompensation" className="block text-sm font-semibold leading-6 text-gray-900">
-                      Bonus ($)
-                    </label>
-                    <div className="mt-2.5">
-                      <Field
-                        type="number"
-                        name="bonusCompensation"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="partnershipStake" className="block text-sm font-semibold leading-6 text-gray-900">
-                      Partnership Income ($)
-                    </label>
-                    <div className="mt-2.5">
-                      <Field
-                        type="number"
-                        name="partnershipStake"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label htmlFor="location" className="block text-sm font-semibold leading-6 text-gray-900">
-                      Location
-                    </label>
-                    <div className="mt-2.5">
-                      <Field
-                        type="text"
-                        name="location"
-                        className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                      />
-                      {errors.location && touched.location && (
-                        <div className="text-red-500 text-sm mt-1">{errors.location}</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  {submitStatus === 'success' && (
-                    <div className="mb-4 rounded-md bg-green-50 p-4">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <CheckCircleIcon className="h-5 w-5 text-green-400" aria-hidden="true" />
-                        </div>
-                        <div className="ml-3">
-                          <h3 className="text-sm font-medium text-green-800">Submission Successful</h3>
-                          <div className="mt-2 text-sm text-green-700">
-                            <p>Thank you for contributing to salary transparency in healthcare!</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {submitStatus === 'error' && (
-                    <div className="mb-4 rounded-md bg-red-50 p-4">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
-                        </div>
-                        <div className="ml-3">
-                          <h3 className="text-sm font-medium text-red-800">Submission Failed</h3>
-                          <div className="mt-2 text-sm text-red-700">
-                            <p>Please try again later. If the problem persists, contact support.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className={`rounded-md px-6 py-3 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600
-                        ${isSubmitting 
-                          ? 'bg-blue-400 cursor-not-allowed' 
-                          : 'bg-blue-600 hover:bg-blue-500'
-                        }`}
-                    >
-                      {isSubmitting ? (
-                        <div className="flex items-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Submitting...
-                        </div>
-                      ) : 'Submit Salary Information'}
-                    </button>
-                  </div>
-
-                  <div className="mt-4 text-center text-sm text-gray-500">
-                    By submitting, you agree that the information provided is accurate 
-                    and can be shared anonymously on our platform.
-                  </div>
-                </div>
-              </div>
-                </Form>
-              )}
-            </Formik>
+                <button
+                  type="submit"
+                  disabled={!isValid || isSubmitting}
+                  className={`w-full rounded-md px-6 py-3 text-sm font-semibold text-white shadow-sm
+                    ${!isValid || isSubmitting
+                      ? 'bg-blue-300 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-500'
+                    }`}
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Salary Information'}
+                </button>
+              </Form>
+            )}
+          </Formik>
           </div>
         </div>
       </div>
