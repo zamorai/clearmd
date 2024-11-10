@@ -6,30 +6,17 @@ import { useSpecialtyStats } from '../hooks/useStatistics';
 import { Users, TrendingUp, MapPin, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
-
-// Custom Y-Axis tick formatter
-const formatCurrency = (value) => {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`;
-  }
-  return `$${value}`;
-};
+import { formatCurrency } from '../utils/numberUtils';
 
 const MainHeroSection = ({selectedSpecialty, setSelectedSpecialty, selectedSubspecialty, setSelectedSubspecialty}) => {
   
-  const { stats, loading } = useSpecialtyStats(selectedSpecialty);
+  const { stats, loading } = useSpecialtyStats(selectedSpecialty, selectedSubspecialty);
 
-  useEffect(() => {
-
-  }, [selectedSpecialty, selectedSubspecialty])
 
   console.log(stats)
 
   return (
-    <div className="relative isolate overflow-hidden bg-white py-24">
+    <div className="relative isolate bg-white py-24">
       <div className=''>
         <svg
           aria-hidden="true"

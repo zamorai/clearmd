@@ -1,2 +1,9 @@
-- make sure subspecialty filter updates the main page data
-- add a default value to the main page
+- make sure subspecialty filter updates the main page data - DONE
+- add a default value to the main page - DONE
+- organize graph in increasing order - DONE
+- organize position by salary
+- add a loading state to the main page
+- add a loading state to the salary table
+- add a loading state to the aggregated compensation view
+- add a loading state to the statistics view
+- add years in role to the salary table

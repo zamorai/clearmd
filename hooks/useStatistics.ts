@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 
 export interface SpecialtyStats {
   specialty_name: string;
+  subspecialty_name?: string;
   specialty_color: string;
   overview: {
     total_entries: number;
@@ -36,7 +37,10 @@ export interface SpecialtyStats {
   };
 }
 
-export function useSpecialtyStats(specialtyId: string | null) {
+export function useSpecialtyStats(
+  specialtyId: string | null, 
+  subspecialtyId: string | null = null
+) {
   const [stats, setStats] = useState<SpecialtyStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -47,15 +51,23 @@ export function useSpecialtyStats(specialtyId: string | null) {
         setStats(null);
         return;
       }
-
+  
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('specialty_detailed_stats')
           .select('*')
-          .eq('specialty_id', specialtyId)
-          .single();
-
+          .eq('specialty_id', specialtyId);
+  
+        if (subspecialtyId) {
+          // If subspecialty is specified, get exact match
+          query = query.eq('subspecialty_id', subspecialtyId);
+        } else {
+          // If no subspecialty specified, get the row with null subspecialty_id
+          query = query.is('subspecialty_id', null);
+        }
+  
+        const { data, error } = await query.single();
         if (error) throw error;
         setStats(data);
       } catch (e) {
@@ -65,9 +77,9 @@ export function useSpecialtyStats(specialtyId: string | null) {
         setLoading(false);
       }
     }
-
+  
     fetchStats();
-  }, [specialtyId]);
+  }, [specialtyId, subspecialtyId]);
 
   return { stats, loading, error };
 }

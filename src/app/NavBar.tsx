@@ -53,31 +53,31 @@ import {
 } from 'lucide-react'
 
 const specialties = [
-{ name: 'Anesthesiology',  color: '#FF6B6B', href: '/compensation/aggregated?specialty=cardiology', icon: HeartPulse }, 
-{ name: 'Dermatology',  color: '#4ECDC4', href: '/compensation/aggregated?specialty=cardiology', icon:  Syringe}, 
-{ name: 'Emergency Medicine',  color: '#45B7D1', href: '/compensation/aggregated?specialty=cardiology', icon: Ambulance }, 
-{ name: 'Family Medicine',  color: '#96CEB4', href: '/compensation/aggregated?specialty=cardiology', icon: Users }, 
-{ name: 'Internal Medicine',  color: '#FFEEAD', href: '/compensation/aggregated?specialty=cardiology', icon: Stethoscope }, 
-{ name: 'Neurology',  color: '#D4A5A5', href: '/compensation/aggregated?specialty=cardiology', icon: Brain }, 
-{ name: 'Obstetrics and Gynecology',  color: '#FFB6B9', href: '/compensation/aggregated?specialty=cardiology', icon: Baby }, 
-{ name: 'Ophthalmology',  color: '#957DAD', href: '/compensation/aggregated?specialty=cardiology', icon: Eye }, 
-{ name: 'Orthopaedic Surgery',  color: '#9DE0AD', href: '/compensation/aggregated?specialty=cardiology', icon: Bone }, 
-{ name: 'Otolaryngology',  color: '#45B7D1', href: '/compensation/aggregated?specialty=cardiology', icon: Ear }, 
-{ name: 'Pathology',  color: '#FF9999', href: '/compensation/aggregated?specialty=cardiology', icon: Microscope }, 
-{ name: 'Pediatrics',  color: '#FFB347', href: '/compensation/aggregated?specialty=cardiology', icon:  Backpack}, 
-{ name: 'Psychiatry',  color: '#C3B1E1', href: '/compensation/aggregated?specialty=cardiology', icon: BrainCircuit }, 
-{ name: 'Radiology',  color: '#A8E6CF', href: '/compensation/aggregated?specialty=cardiology', icon:  Radio}, 
-{ name: 'Surgery',  color: '#FF6B6B', href: '/compensation/aggregated?specialty=cardiology', icon: Slice }, 
-{ name: 'Urology',  color: '#87CEEB', href: '/compensation/aggregated?specialty=cardiology', icon: Banana }, 
-{ name: 'Medical Genetics and Genomics',  color: '#4B0082', href: '/compensation/aggregated?specialty=cardiology', icon: Dna }, 
-{ name: 'Nuclear Medicine',  color: '#20B2AA', href: '/compensation/aggregated?specialty=cardiology', icon: Radiation }, 
-{ name: 'Physical Medicine and Rehabilitation',  color: '#8FBC8F', href: '/compensation/aggregated?specialty=cardiology', icon: Activity }, 
-{ name: 'Plastic Surgery',  color: '#DDA0DD', href: '/compensation/aggregated?specialty=cardiology', icon: Scissors }, 
-{ name: 'Public Health and General Preventive Medicine',  color: '#B8860B', href: '/compensation/aggregated?specialty=cardiology', icon: Shield }, 
-{ name: 'Radiation Oncology',  color: '#CD853F', href: '/compensation/aggregated?specialty=cardiology', icon: Zap }, 
-{ name: 'Thoracic Surgery',  color: '#8B4513', href: '/compensation/aggregated?specialty=cardiology', icon: Heart }, 
-{ name: 'Neurological Surgery',  color: '#800000', href: '/compensation/aggregated?specialty=cardiology', icon: BrainCog }, 
-{ name: 'Colon and Rectcal Surgery',  color: '#8B0000', href: '/compensation/aggregated?specialty=cardiology', icon: Drill }, 
+{ name: 'Anesthesiology',  color: '#FF6B6B', href: '/compensation/aggregated?specialty=Anesthesiology', icon: HeartPulse }, 
+{ name: 'Dermatology',  color: '#4ECDC4', href: '/compensation/aggregated?specialty=Dermatology', icon:  Syringe}, 
+{ name: 'Emergency Medicine',  color: '#45B7D1', href: '/compensation/aggregated?specialty=Emergency Medicine', icon: Ambulance }, 
+{ name: 'Family Medicine',  color: '#96CEB4', href: '/compensation/aggregated?specialty=Family Medicine', icon: Users }, 
+{ name: 'Internal Medicine',  color: '#FFEEAD', href: '/compensation/aggregated?specialty=Internal Medicine', icon: Stethoscope }, 
+{ name: 'Neurology',  color: '#D4A5A5', href: '/compensation/aggregated?specialty=Neurology', icon: Brain }, 
+{ name: 'Obstetrics and Gynecology',  color: '#FFB6B9', href: '/compensation/aggregated?specialty=Obstetrics and Gynecology', icon: Baby }, 
+{ name: 'Ophthalmology',  color: '#957DAD', href: '/compensation/aggregated?specialty=Ophthalmology', icon: Eye }, 
+{ name: 'Orthopaedic Surgery',  color: '#9DE0AD', href: '/compensation/aggregated?specialty=Orthopaedic Surgery', icon: Bone }, 
+{ name: 'Otolaryngology',  color: '#45B7D1', href: '/compensation/aggregated?specialty=Otolaryngology', icon: Ear }, 
+{ name: 'Pathology',  color: '#FF9999', href: '/compensation/aggregated?specialty=Pathology', icon: Microscope }, 
+{ name: 'Pediatrics',  color: '#FFB347', href: '/compensation/aggregated?specialty=Pediatrics', icon:  Backpack}, 
+{ name: 'Psychiatry',  color: '#C3B1E1', href: '/compensation/aggregated?specialty=Psychiatry', icon: BrainCircuit }, 
+{ name: 'Radiology',  color: '#A8E6CF', href: '/compensation/aggregated?specialty=Radiology', icon:  Radio}, 
+{ name: 'Surgery',  color: '#FF6B6B', href: '/compensation/aggregated?specialty=Surgery', icon: Slice }, 
+{ name: 'Urology',  color: '#87CEEB', href: '/compensation/aggregated?specialty=Urology', icon: Banana }, 
+{ name: 'Medical Genetics and Genomics',  color: '#4B0082', href: '/compensation/aggregated?specialty=Medical Genetics and Genomics', icon: Dna }, 
+{ name: 'Nuclear Medicine',  color: '#20B2AA', href: '/compensation/aggregated?specialty=Nuclear Medicine', icon: Radiation }, 
+{ name: 'Physical Medicine and Rehabilitation',  color: '#8FBC8F', href: '/compensation/aggregated?specialty=Physical Medicine and Rehabilitation', icon: Activity }, 
+{ name: 'Plastic Surgery',  color: '#DDA0DD', href: '/compensation/aggregated?specialty=Plastic Surgery', icon: Scissors }, 
+{ name: 'Public Health and General Preventive Medicine',  color: '#B8860B', href: '/compensation/aggregated?specialty=Public Health and General Preventive Medicine', icon: Shield }, 
+{ name: 'Radiation Oncology',  color: '#CD853F', href: '/compensation/aggregated?specialty=Radiation Oncology', icon: Zap }, 
+{ name: 'Thoracic Surgery',  color: '#8B4513', href: '/compensation/aggregated?specialty=Thoracic Surgery', icon: Heart }, 
+{ name: 'Neurological Surgery',  color: '#800000', href: '/compensation/aggregated?specialty=Neurological Surgery', icon: BrainCog }, 
+{ name: 'Colon and Rectcal Surgery',  color: '#8B0000', href: '/compensation/aggregated?specialty=Colon and Rectcal Surgery', icon: Drill }, 
 ];
 
 const callsToAction = [
@@ -123,11 +123,11 @@ const SpecialtiesPopover = () => {
       <PopoverButton
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="group inline-flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 hover:text-vibrant-teal focus:outline-none"
+        className="inline-flex items-center gap-x-1 text-[15px] font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
       >
         <span>Specialties</span>
         <ChevronDownIcon
-          className={`h-5 w-5 flex-none text-gray-400 transition-transform duration-200 ${
+          className={`h-4 w-4 flex-none text-gray-400 transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`}
           aria-hidden="true"
@@ -153,7 +153,7 @@ const SpecialtiesPopover = () => {
               onClick={() => setIsOpen(false)}
             >
               <div className="flex h-6 w-6 flex-none items-center justify-center">
-                <item.icon className="h-4 w-4 text-gray-400 group-hover:text-gray-900"/>
+                <item.icon className={`h-4 w-4 text-gray-400 group-hover:text-orange-700`}/>
               </div>
               <span className="group-hover:text-gray-900">
                 {item.name}
@@ -191,7 +191,7 @@ export default function NavBar() {
 
   return (
     <header className="bg-white max-w-6xl mx-auto">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
+      <nav className="mx-auto flex items-center justify-between p-6 lg:px-8">
         <div className="flex lg:flex-1">
           <Link href="/" className="flex items-center">
             <span className="sr-only">ClearMD</span>
@@ -217,10 +217,10 @@ export default function NavBar() {
           </button>
         </div>
 
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-6">
           <Link
             href="/submit"
-            className="text-sm font-semibold leading-6 text-gray-900 hover:text-vibrant-teal transition-colors"
+            className="rounded-full px-4 py-1.5 text-[13px] font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors duration-200"
           >
             Add Salary <span aria-hidden="true">→</span>
           </Link>

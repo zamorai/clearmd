@@ -1,26 +1,20 @@
 const navigation = {
-  solutions: [
-    { name: 'Marketing', href: '#' },
-    { name: 'Analytics', href: '#' },
-    { name: 'Automation', href: '#' },
-    { name: 'Commerce', href: '#' },
-    { name: 'Insights', href: '#' },
+  explore: [
+    { name: 'Compensation Data', href: '/compensation' },
+    { name: 'Specialties', href: '/specialties' },
+    { name: 'Statistics', href: '/statistics' },
+    { name: 'Trends', href: '/trends' },
   ],
-  support: [
-    { name: 'Submit ticket', href: '#' },
-    { name: 'Documentation', href: '#' },
-    { name: 'Guides', href: '#' },
+  resources: [
+    { name: 'How It Works', href: '/how-it-works' },
+    { name: 'FAQ', href: '/faq' },
+    { name: 'Submit Data', href: '/submit' },
   ],
-  company: [
-    { name: 'About', href: '#' },
-    { name: 'Blog', href: '#' },
-    { name: 'Jobs', href: '#' },
-    { name: 'Press', href: '#' },
-  ],
-  legal: [
-    { name: 'Terms of service', href: '#' },
-    { name: 'Privacy policy', href: '#' },
-    { name: 'License', href: '#' },
+  about: [
+    { name: 'About Us', href: '/about' },
+    { name: 'Contact', href: '/contact' },
+    { name: 'Privacy', href: '/privacy' },
+    { name: 'Terms', href: '/terms' },
   ],
   social: [
     {
@@ -94,12 +88,12 @@ export default function Footer() {
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="space-y-8">
             <img
-              alt="Company name"
-              src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
+              alt="MedSalary"
+              src="/logo.svg"  // Update with your actual logo path
               className="h-9"
             />
             <p className="text-balance text-sm/6 text-gray-600">
-              Making the world a better place through constructing elegant hierarchies.
+              Empowering medical professionals with transparent compensation data and insights.
             </p>
             <div className="flex gap-x-6">
               {navigation.social.map((item) => (
@@ -113,9 +107,9 @@ export default function Footer() {
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
-                <h3 className="text-sm/6 font-semibold text-gray-900">Solutions</h3>
+                <h3 className="text-sm/6 font-semibold text-gray-900">Explore</h3>
                 <ul role="list" className="mt-6 space-y-4">
-                  {navigation.solutions.map((item) => (
+                  {navigation.explore.map((item) => (
                     <li key={item.name}>
                       <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
                         {item.name}
@@ -125,9 +119,9 @@ export default function Footer() {
                 </ul>
               </div>
               <div className="mt-10 md:mt-0">
-                <h3 className="text-sm/6 font-semibold text-gray-900">Support</h3>
+                <h3 className="text-sm/6 font-semibold text-gray-900">Resources</h3>
                 <ul role="list" className="mt-6 space-y-4">
-                  {navigation.support.map((item) => (
+                  {navigation.resources.map((item) => (
                     <li key={item.name}>
                       <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
                         {item.name}
@@ -137,36 +131,22 @@ export default function Footer() {
                 </ul>
               </div>
             </div>
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm/6 font-semibold text-gray-900">Company</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.company.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm/6 font-semibold text-gray-900">Legal</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.legal.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div>
+              <h3 className="text-sm/6 font-semibold text-gray-900">About</h3>
+              <ul role="list" className="mt-6 space-y-4">
+                {navigation.about.map((item) => (
+                  <li key={item.name}>
+                    <a href={item.href} className="text-sm/6 text-gray-600 hover:text-gray-900">
+                      {item.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
         <div className="mt-16 border-t border-gray-900/10 pt-8 sm:mt-20 lg:mt-24">
-          <p className="text-sm/6 text-gray-600">&copy; 2024 Your Company, Inc. All rights reserved.</p>
+          <p className="text-sm/6 text-gray-600">&copy; {new Date().getFullYear()} MedSalary. All rights reserved.</p>
         </div>
       </div>
     </footer>

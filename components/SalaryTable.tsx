@@ -228,124 +228,111 @@ const calculateTotal = (comp: CompensationBreakdown): number => {
   return comp.base + (comp.bonus || 0) + (comp.stock || 0) + (comp.other || 0);
 };
 
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case 'academia':
+      return <BuildingOffice2Icon className="w-6 h-6 text-gray-600" />;
+    case 'hospital':
+      return <BriefcaseIcon className="w-6 h-6 text-gray-600" />;
+    case 'research':
+      return <BuildingOffice2Icon className="w-6 h-6 text-gray-600" />;
+    case 'private_practice':
+      return <BriefcaseIcon className="w-6 h-6 text-gray-600" />;
+    default:
+      return <BuildingOffice2Icon className="w-6 h-6 text-gray-600" />;
+  }
+};
+
 const ExpandedDetails: React.FC<{ data: SalaryData }> = ({ data }) => {
   return (
     <tr className="relative">
-      <td colSpan={4} className="px-0 py-4 bg-white shadow-md">
-        <div className="px-8 py-6">
-          {/* Main compensation section */}
-          <div className="mb-8">
-            <h4 className="text-sm font-medium text-gray-900 mb-4">Compensation Details</h4>
-            <div className="grid grid-cols-3 gap-6">
-              <div className="bg-indigo-50/50 rounded-lg p-4">
-                <div className="text-sm text-gray-500 mb-2">Base Salary</div>
-                <div className="text-lg font-semibold text-gray-900">
-                  {formatCurrency(data.compensation.base)}
-                </div>
+      <td colSpan={4} className="px-6 py-4 bg-white">
+        <div className="grid grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 mb-4">
+              {getCategoryIcon(data.category)}
+              <div>
+                <div className="font-medium">{data.position}</div>
+                <div className="text-sm text-gray-500">{data.specialty}</div>
               </div>
-
-              {data.compensation.bonus && (
-                <div className="bg-indigo-50/50 rounded-lg p-4">
-                  <div className="text-sm text-gray-500 mb-2">Annual Bonus</div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(data.compensation.bonus)}
-                  </div>
-                </div>
-              )}
-
-              {data.compensation.stock && (
-                <div className="bg-indigo-50/50 rounded-lg p-4">
-                  <div className="text-sm text-gray-500 mb-2">Stock/RSU</div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(data.compensation.stock)}
-                  </div>
-                </div>
-              )}
-
-              {data.compensation.other && (
-                <div className="bg-indigo-50/50 rounded-lg p-4">
-                  <div className="text-sm text-gray-500 mb-2">Other Compensation</div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(data.compensation.other)}
-                  </div>
-                </div>
-              )}
             </div>
 
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-900">Total Compensation</span>
-                <span className="text-lg font-bold text-gray-900">
-                  {formatCurrency(calculateTotal(data.compensation))}
-                </span>
+            <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Details</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">{data.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BriefcaseIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600 capitalize">{data.category.replace('_', ' ')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">
+                    {new Date(data.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Experience</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Years at Company</span>
+                  <span className="text-sm font-medium">{data.yearsExperience.role} yrs</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Total Experience</span>
+                  <span className="text-sm font-medium">{data.yearsExperience.total} yrs</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Position and Experience Details */}
-          <div className="grid grid-cols-2 gap-8">
-            <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-4">Position Details</h4>
-              <div className="space-y-4">
-                <div className="bg-indigo-50/50 rounded-lg p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm text-gray-500 mb-1">Title</div>
-                      <div className="text-sm font-medium text-gray-900">{data.position}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 mb-1">Category</div>
-                      <div className="text-sm font-medium text-gray-900 capitalize">
-                        {data.category.replace('_', ' ')}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 mb-1">Specialty</div>
-                      <div className="text-sm font-medium text-gray-900">{data.specialty}</div>
-                    </div>
-                    {data.subspecialty && (
-                      <div>
-                        <div className="text-sm text-gray-500 mb-1">Subspecialty</div>
-                        <div className="text-sm font-medium text-gray-900">{data.subspecialty}</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+          {/* Right Column - Compensation */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-4 mt-6">Compensation Breakdown</h4>
+            <div className="space-y-3">
+              <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+                <div className="text-sm text-gray-500">Base Salary</div>
+                <div className="text-lg font-semibold">{formatCurrency(data.compensation.base)}</div>
               </div>
-            </div>
 
-            <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-4">Additional Information</h4>
-              <div className="space-y-4">
-                <div className="bg-indigo-50/50 rounded-lg p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm text-gray-500 mb-1">Location</div>
-                      <div className="text-sm font-medium text-gray-900">{data.location}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 mb-1">Date Added</div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {new Date(data.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 mb-1">Years in Role</div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {data.yearsExperience.role} years
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 mb-1">Total Experience</div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {data.yearsExperience.total} years
-                      </div>
-                    </div>
-                  </div>
+              {data.compensation.stock && (
+                <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-500">Stock</div>
+                  <div className="text-lg font-semibold">{formatCurrency(data.compensation.stock)}</div>
+                </div>
+              )}
+
+              {data.compensation.bonus && (
+                <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-500">Annual Bonus</div>
+                  <div className="text-lg font-semibold">{formatCurrency(data.compensation.bonus)}</div>
+                </div>
+              )}
+
+              {data.compensation.other && (
+                <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-500">Other Compensation</div>
+                  <div className="text-lg font-semibold">{formatCurrency(data.compensation.other)}</div>
+                </div>
+              )}
+
+              <div className="bg-indigo-50 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-900">Total Compensation</span>
+                  <span className="text-lg font-bold text-gray-900">
+                    {formatCurrency(calculateTotal(data.compensation))}
+                  </span>
                 </div>
               </div>
             </div>
@@ -371,7 +358,7 @@ const SalaryTable: React.FC<SalaryTableProps> = ({ data, itemsPerPage = 40 }) =>
     }
   };
 
-  const sortedData = [...sampleSalaryData].sort((a, b) => {
+  const sortedData = [...data].sort((a, b) => {
     let aValue = sortColumn === 'compensation' ? calculateTotal(a.compensation) : a[sortColumn];
     let bValue = sortColumn === 'compensation' ? calculateTotal(b.compensation) : b[sortColumn];
     
@@ -394,7 +381,7 @@ const SalaryTable: React.FC<SalaryTableProps> = ({ data, itemsPerPage = 40 }) =>
   };
 
   return (
-    <div className="bg-white max-w-4xl shadow rounded-lg overflow-hidden">
+    <div className="bg-white shadow rounded-lg overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100">
@@ -443,7 +430,7 @@ const SalaryTable: React.FC<SalaryTableProps> = ({ data, itemsPerPage = 40 }) =>
                 <tr 
                   className={`
                     ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                    ${expandedRow === row.id ? 'border-b-0 bg-white' : ''}
+                    ${expandedRow === row.id ? 'border-b-0 bg-white relative z-10 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]' : ''}
                     hover:bg-gray-100 cursor-pointer transition-colors
                   `}
                   onClick={() => setExpandedRow(expandedRow === row.id ? null : row.id)}

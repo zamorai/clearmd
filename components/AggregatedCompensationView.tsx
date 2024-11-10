@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { 
@@ -27,6 +27,9 @@ import {
 } from 'lucide-react';
 import SpecialtySelector from './SpecialtySelector';
 import { useSpecialtyAndSubspecialtyIds } from '../hooks/useSpecialtyData';
+import { useCategories } from '../hooks/useCategories';
+import { useSpecialtyStats } from '../hooks/useStatistics';
+import { formatCurrency } from '../utils/numberUtils';
 
 const StatCard = ({ title, value, description, icon: Icon, trend = null }) => (
   <div className="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition duration-200">
@@ -52,15 +55,6 @@ const StatCard = ({ title, value, description, icon: Icon, trend = null }) => (
   </div>
 );
 
-const formatCurrency = (value) => {
-  if (!value) return '$0';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0
-  }).format(value);
-};
-
 const formatYAxis = (value) => {
   if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
   if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
@@ -68,69 +62,182 @@ const formatYAxis = (value) => {
 };
 
 const AggregatedCompensationView: React.FC = () => {
-  const router = useSearchParams();
-  const specialtyName = router.get('specialty') ?? null;
-  const subspecialtyName = router.get('subspecialty') ?? null;
-  const { specialtyId, subspecialtyId, loading, error } = useSpecialtyAndSubspecialtyIds(specialtyName, subspecialtyName);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const specialtyName = searchParams.get('specialty') ?? null;
+  const subspecialtyName = searchParams.get('subspecialty') ?? null;
+  
+  const { specialtyId, subspecialtyId, loading, error } = useSpecialtyAndSubspecialtyIds(
+    specialtyName,
+    subspecialtyName
+  );
+  
+  const { categories } = useCategories();
   const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<string | null>(null);
-  const [selectedSubspecialtyId, setSelectedSubspecialtyId] = useState<string | null>(subspecialtyId || null);
+  const [selectedSubspecialtyId, setSelectedSubspecialtyId] = useState<string | null>(null);
   const [aggregatedData, setAggregatedData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
+  const { stats } = useSpecialtyStats(selectedSpecialtyId, selectedSubspecialtyId);
+
+  // Update URL when IDs change
+  useEffect(() => {
+    if (selectedSpecialtyId) {
+      const updateURL = async () => {
+        try {
+          // Get specialty name
+          const { data: specialtyData } = await supabase
+            .from('specialties')
+            .select('name')
+            .eq('id', selectedSpecialtyId)
+            .single();
+          
+          const params = new URLSearchParams(searchParams);
+          params.set('specialty', specialtyData?.name || '');
+          
+          // Handle subspecialty
+          if (selectedSubspecialtyId) {
+            const { data: subData } = await supabase
+              .from('subspecialties')
+              .select('name')
+              .eq('id', selectedSubspecialtyId)
+              .single();
+            
+            if (subData?.name) {
+              params.set('subspecialty', subData.name);
+            }
+          } else {
+            params.delete('subspecialty');
+            // Force a data refresh when subspecialty is deselected
+            fetchAggregatedData(selectedSpecialtyId, null);
+          }
+  
+          router.push(`?${params.toString()}`);
+        } catch (error) {
+          console.error('Error updating URL:', error);
+        }
+      };
+  
+      updateURL();
+    }
+  }, [selectedSpecialtyId, selectedSubspecialtyId]);
+
+  // Set selected IDs from URL params
   useEffect(() => {
     if (specialtyId) {
-      setSelectedSpecialtyId(specialtyId)
-      setSelectedSubspecialtyId(subspecialtyId)
+      setSelectedSpecialtyId(specialtyId);
+      setSelectedSubspecialtyId(subspecialtyId);
+    }
+  }, [specialtyId, subspecialtyId]);
+
+  // Your existing data fetching effect
+  useEffect(() => {
+    if (specialtyId) {
       fetchAggregatedData(specialtyId, subspecialtyId);
     }
   }, [specialtyId, subspecialtyId]);
 
-  useEffect(() => {
-    if (selectedSpecialtyId) {
-      fetchAggregatedData(selectedSpecialtyId, selectedSubspecialtyId);
-    }
-  }, [selectedSpecialtyId, selectedSubspecialtyId]);
-
   const fetchAggregatedData = async (specialtyId: string, subspecialtyId: string | null) => {
-    let query = supabase
-      .from('salaries')
-      .select('*')
-      .eq('specialty_id', specialtyId);
-    
-    if (subspecialtyId) {
-      query = query.eq('subspecialty_id', subspecialtyId);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching data:', error);
-    } else {
-      processAggregatedData(data);
+    setIsLoading(true);
+    try {
+      console.log('Fetching data with:', { specialtyId, subspecialtyId });
+      let query = supabase
+        .from('salaries')
+        .select('*')
+        .eq('specialty_id', specialtyId);
+      
+      if (subspecialtyId) {
+        query = query.eq('subspecialty_id', subspecialtyId);
+      }
+      
+      const { data, error } = await query;
+      console.log('Fetched data:', { count: data?.length, error });
+      
+      if (error) {
+        console.error('Error fetching data:', error);
+      } else {
+        await processAggregatedData(data);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const processAggregatedData = (data) => {
-    const categories = ['academia', 'hospital', 'private_practice', 'research'];
-    const processed = {
-      averageSalaries: [],
-      experienceData: [],
-      locationData: {},
-      detailedData: data,
-    };
+    const processAggregatedData = async (data: any[]) => {
+      const { data: specialtiesData } = await supabase
+      .from('specialties')
+      .select('id, name');
+    
+      const { data: subspecialtiesData } = await supabase
+        .from('subspecialties')
+        .select('id, name');
+        
+      const { data: positionsData } = await supabase
+        .from('positions')
+        .select(`
+          id, 
+          title,
+          employment_categories (
+            id,
+            name,
+            display_name
+          )
+        `);
+        
+      const { data: locationsData } = await supabase
+        .from('locations')
+        .select('id, city, state');
+
+      const mapCategory = (dbCategory: string): 'academia' | 'hospital' | 'research' | 'private_practice' => {
+        const categoryMap = {
+          'academic_medicine': 'academia',
+          'hospital_based': 'hospital',
+          'research_development': 'research',
+          'private_practice': 'private_practice'
+        };
+        return categoryMap[dbCategory] || 'hospital';
+      };
+
+      // Create lookup maps
+      const specialtyMap = Object.fromEntries(specialtiesData?.map(s => [s.id, s.name]) ?? []);
+      const subspecialtyMap = Object.fromEntries(subspecialtiesData?.map(s => [s.id, s.name]) ?? []);
+      const positionMap = Object.fromEntries(positionsData?.map(p => [p.id, {
+        title: p.title,
+        category: p.employment_categories[0]?.name
+      }]) ?? []);
+      const locationMap = Object.fromEntries(locationsData?.map(l => [l.id, `${l.city}, ${l.state}`]) ?? []);
+
+      const processed = {
+        averageSalaries: [], // Your existing averageSalaries processing
+        experienceData: [], // Your existing experienceData processing
+        detailedData: data.map(item => ({
+          id: item.id,
+          specialty: specialtyMap[item.specialty_id] || 'Unknown',
+          subspecialty: item.subspecialty_id ? subspecialtyMap[item.subspecialty_id] : undefined,
+          position: positionMap[item.position_id]?.title || 'Unknown',
+          category: mapCategory(item.category_id), // Map to expected category format
+          location: locationMap[item.location_id] || 'Unknown',
+          yearsExperience: {
+            total: item.years_experience,
+            role: item.years_experience // Since we don't store years_in_role separately
+          },
+          compensation: {
+            base: item.base_salary,
+            bonus: item.bonus || undefined,
+            other: item.other_compensation || undefined
+          },
+          date: item.created_at
+        }))
+      };
 
     categories.forEach(category => {
-      const categoryData = data.filter(item => item.category === category);
-      const avgSalary = categoryData.reduce((sum, item) => sum + item.salary, 0) / categoryData.length;
-      processed.averageSalaries.push({ category, avgSalary });
+      const categoryData = data.filter(item => item.category_id === category.id);
+      const salary = categoryData.reduce((sum, item) => sum + item.total_compensation, 0) / categoryData.length;
+      processed.averageSalaries.push({ category: category['display_name'], salary });
 
-      const expData = categoryData.map(item => ({ years: item.years_experience, salary: item.salary }));
-      processed.experienceData.push({ category, data: expData });
-
-      const locations = categoryData.reduce((acc, item) => {
-        acc[item.location] = (acc[item.location] || 0) + 1;
-        return acc;
-      }, {});
-      processed.locationData[category] = locations;
+      const expData = categoryData.map(item => ({ years: item.years_experience, salary: item.total_compensation }));
+      expData.sort()
+      processed.experienceData.push({ category: category['display_name'], data: expData });
     });
 
     setAggregatedData(processed);
@@ -160,40 +267,20 @@ const AggregatedCompensationView: React.FC = () => {
       {aggregatedData && (
         <>
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              title="Total Data Points"
-              value={aggregatedData.detailedData.length.toLocaleString()}
-              description="Active salary reports"
-              icon={Users}
-              trend={12}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <StatCard
               title="Average Compensation"
-              value={formatCurrency(
-                aggregatedData.averageSalaries.reduce((sum, item) => sum + item.avgSalary, 0) / 
-                aggregatedData.averageSalaries.length
-              )}
-              description="Across all categories"
+              value={formatCurrency(stats?.stats?.overview.avg_total_comp)}
+              description={`${specialtyName} ${subspecialtyName ? '- ' + subspecialtyName : ''}`}
               icon={TrendingUp}
-              trend={8}
+              // trend={8}
             />
             <StatCard
-              title="Private vs Academic"
-              value={`${formatCurrency(
-                aggregatedData.averageSalaries.find(item => item.category === 'private_practice')?.avgSalary
-              )} / ${formatCurrency(
-                aggregatedData.averageSalaries.find(item => item.category === 'academia')?.avgSalary
-              )}`}
-              description="Private practice vs Academic salary"
-              icon={Building2}
-            />
-            <StatCard
-              title="Experience Premium"
-              value="45%"
-              description="Salary increase per 5 years"
-              icon={GraduationCap}
-              trend={5}
+              title="Total Data Points"
+              value={stats?.stats?.overview.total_entries}
+              description="Active salary reports"
+              icon={Users}
+              // trend={12}
             />
           </div>
 
@@ -202,8 +289,11 @@ const AggregatedCompensationView: React.FC = () => {
             {/* Category Comparison */}
             <div className="bg-white p-6 rounded-xl border border-gray-100">
               <h2 className="text-lg font-semibold mb-4">Average Salary by Category</h2>
+              {isLoading ? (
+              <div className="h-[300px] animate-pulse bg-gray-100 rounded-lg" />
+            ) : (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={aggregatedData.averageSalaries} margin={{ top: 20, right: 30, left: 60, bottom: 20 }}>
+                <BarChart data={aggregatedData.averageSalaries} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                   <XAxis 
                     dataKey="category"
@@ -227,21 +317,25 @@ const AggregatedCompensationView: React.FC = () => {
                     }}
                   />
                   <Bar 
-                    dataKey="avgSalary"
+                    dataKey="salary"
                     fill="#818CF8"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </div>
 
             {/* Experience Trend */}
             <div className="bg-white p-6 rounded-xl border border-gray-100">
               <h2 className="text-lg font-semibold mb-4">Salary by Experience</h2>
+              {isLoading ? (
+              <div className="h-[300px] animate-pulse bg-gray-100 rounded-lg" />
+            ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart
-                  data={aggregatedData.experienceData.flatMap(cat => cat.data)}
-                  margin={{ top: 20, right: 30, left: 60, bottom: 20 }}
+                  data={aggregatedData.experienceData.flatMap(cat => cat.data).sort((a, b) => a.years - b.years)}
+                  margin={{ top: 10, right: 10, left: -10, bottom: 10 }}
                 >
                   <defs>
                     <linearGradient id="colorSalary" x1="0" y1="0" x2="0" y2="1">
@@ -280,36 +374,22 @@ const AggregatedCompensationView: React.FC = () => {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Location Analysis */}
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold mb-4">Top Locations</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Object.entries(aggregatedData.locationData).map(([category, locations]) => (
-                <div key={category} className="bg-white p-6 rounded-xl border border-gray-100">
-                  <h3 className="text-sm font-medium text-gray-500 mb-4 capitalize">{category}</h3>
-                  <ul className="space-y-3">
-                    {Object.entries(locations as Record<string, number>)
-                      .sort(([, a], [, b]) => b - a)
-                      .slice(0, 3)
-                      .map(([location, count], index) => (
-                        <li key={location} className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">{location}</span>
-                          <span className="text-sm font-medium text-gray-900">{count} reports</span>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ))}
+              )}
             </div>
           </div>
 
           {/* Detailed Data Table */}
           <div>
             <h2 className="text-lg font-semibold mb-4">Detailed Salary Reports</h2>
+            {isLoading ? (
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 animate-pulse bg-gray-100 rounded-lg" />
+              ))}
+            </div>
+          ) : (
             <SalaryTable data={aggregatedData.detailedData} />
+          )}
           </div>
         </>
       )}

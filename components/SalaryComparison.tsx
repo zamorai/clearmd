@@ -100,8 +100,6 @@ const SalaryComparison: React.FC<SalaryComparisonProps> = ({
   );
   const [hoveredPosition, setHoveredPosition] = useState<string | null>(null);
 
-  console.log(positionData)
-
   useEffect(() => {
     async function fetchLocations() {
       if (!selectedSpecialty) return;
@@ -110,6 +108,7 @@ const SalaryComparison: React.FC<SalaryComparisonProps> = ({
         .from('salaries')
         .select(`
           locations (
+            id,
             city,
             state
           )
@@ -125,21 +124,22 @@ const SalaryComparison: React.FC<SalaryComparisonProps> = ({
       if (data) {
         // Process unique locations with counts
         const locationCounts = data.reduce((acc, record) => {
-          const key = `${record.locations.city}, ${record.locations.state}`;
-          acc[key] = (acc[key] || 0) + 1;
+          const loc = record.locations;
+          const key = loc.id;
+          
+          if (!acc[key]) {
+            acc[key] = {
+              id: loc.id,
+              city: loc.city,
+              state: loc.state,
+              count: 0
+            };
+          }
+          acc[key].count++;
           return acc;
         }, {});
 
-        const locations = Object.entries(locationCounts).map(([location, count]) => {
-          const [city, state] = location.split(', ');
-          return {
-            city,
-            state,
-            count: count as number
-          };
-        });
-
-        setAvailableLocations(locations);
+        setAvailableLocations(Object.values(locationCounts));
       }
     }
 
@@ -169,50 +169,52 @@ const SalaryComparison: React.FC<SalaryComparisonProps> = ({
           <h2 className="text-2xl font-bold">Salary Comparison</h2>
           <div className="ml-8">
           <Menu as="div" className="relative">
-      <Menu.Button className="inline-flex w-48 justify-between items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50">
-        {selectedLocation ? `${selectedLocation}` : 'All Locations'}
-        <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
-      </Menu.Button>
-      <Menu.Items className="absolute z-10 mt-2 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none max-h-96 overflow-auto">
-        <div className="py-1">
-          <Menu.Item>
-            {({ active }) => (
-              <button
-                onClick={() => setSelectedLocation(null)}
-                className={`${
-                  active ? 'bg-gray-100' : ''
-                } flex justify-between items-center w-full px-4 py-2 text-sm text-gray-700`}
-              >
-                <span>All Locations</span>
-                <span className="text-gray-500 text-xs">
-                  {availableLocations.reduce((sum, loc) => sum + loc.count, 0)} reports
-                </span>
-              </button>
-            )}
-          </Menu.Item>
-          <div className="border-t border-gray-100 my-1" />
-          {availableLocations
-            .sort((a, b) => b.count - a.count) // Sort by count descending
-            .map((location) => (
-              <Menu.Item key={`${location.city}-${location.state}`}>
-                {({ active }) => (
-                  <button
-                    onClick={() => setSelectedLocation(location.city)}
-                    className={`${
-                      active ? 'bg-gray-100' : ''
-                    } flex justify-between items-center w-full px-4 py-2 text-sm text-gray-700`}
-                  >
-                    <span>{`${location.city}, ${location.state}`}</span>
-                    <span className="text-gray-500 text-xs">
-                      {location.count} reports
-                    </span>
-                  </button>
-                )}
-              </Menu.Item>
-            ))}
-        </div>
-      </Menu.Items>
-    </Menu>
+            <Menu.Button className="inline-flex w-48 justify-between items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50">
+              {selectedLocation ? 
+                availableLocations.find(l => l.id === selectedLocation)?.city || 'All Locations' 
+                : 'All Locations'}
+              <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
+            </Menu.Button>
+            <Menu.Items className="absolute z-10 mt-2 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none max-h-96 overflow-auto">
+              <div className="py-1">
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={() => setSelectedLocation(null)}
+                      className={`${
+                        active ? 'bg-gray-100' : ''
+                      } flex justify-between items-center w-full px-4 py-2 text-sm text-gray-700`}
+                    >
+                      <span>All Locations</span>
+                      <span className="text-gray-500 text-xs">
+                        {availableLocations.reduce((sum, loc) => sum + loc.count, 0)} reports
+                      </span>
+                    </button>
+                  )}
+                </Menu.Item>
+                <div className="border-t border-gray-100 my-1" />
+                {availableLocations
+                  .sort((a, b) => b.count - a.count)
+                  .map((location) => (
+                    <Menu.Item key={location.id}>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setSelectedLocation(location.id)}
+                          className={`${
+                            active ? 'bg-gray-100' : ''
+                          } flex justify-between items-center w-full px-4 py-2 text-sm text-gray-700`}
+                        >
+                          <span>{`${location.city}, ${location.state}`}</span>
+                          <span className="text-gray-500 text-xs">
+                            {location.count} reports
+                          </span>
+                        </button>
+                      )}
+                    </Menu.Item>
+                  ))}
+              </div>
+            </Menu.Items>
+          </Menu>
           </div>
         </div>
 

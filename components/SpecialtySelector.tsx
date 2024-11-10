@@ -24,8 +24,6 @@ export default function SpecialtySelector({
   const selectedSpecialtyName = specialties.find(s => s.id === selectedSpecialty)?.name;
   const selectedSubspecialtyName = subspecialties.find(s => s.id === selectedSubspecialty)?.name;
 
-  console.log(selectedSpecialtyName, selectedSpecialty)
-
   const handleSpecialtyChange = (specialtyId: string) => {
     onSpecialtyChange(specialtyId);
     onSubspecialtyChange(null); // Reset subspecialty when specialty changes
@@ -38,14 +36,14 @@ export default function SpecialtySelector({
           {specialtiesLoading ? 'Loading...' : selectedSpecialtyName || 'Select Specialty'}
           <ChevronDownIcon className="h-5 w-5 text-gray-400" />
         </Menu.Button>
-        <Menu.Items className="absolute z-10 mt-2 w-64 max-h-72 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto">
+        <Menu.Items className="absolute z-20 mt-2 w-64 max-h-72 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto">
           {specialties.map((specialty) => (
             <Menu.Item key={specialty.id}>
               {({ active }) => (
                 <button
                   className={`${
                     active ? 'bg-gray-100' : ''
-                  } w-full text-left px-4 py-2 text-sm text-gray-900`}
+                  } w-full z-20 text-left px-4 py-2 text-sm text-gray-900`}
                   onClick={() => handleSpecialtyChange(specialty.id)}
                 >
                   {specialty.name}
@@ -71,7 +69,7 @@ export default function SpecialtySelector({
           <ChevronDownIcon className="h-5 w-5 text-gray-400" />
         </Menu.Button>
         {selectedSpecialty && (
-          <Menu.Items className="absolute z-10 mt-2 w-64 max-h-72 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto">
+          <Menu.Items className="absolute z-20 mt-2 w-64 max-h-72 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto">
             <Menu.Item>
               {({ active }) => (
                 <button

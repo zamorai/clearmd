@@ -1,168 +1,3 @@
-// Homepage Structure
-interface HomepageLayout {
-  heroSection: {
-    quickStats: {
-      totalSubmissions: number,
-      averageSalaryIncrease: string, // "12% YoY"
-      topEarningSpecialties: Array<string>,
-      genderPayGap: string // "Female physicians earn 82¢ per $1"
-    },
-    callToAction: {
-      primary: "Compare Salaries",
-      secondary: "Add Your Salary"
-    }
-  },
-
-  trendingInsights: [
-    {
-      title: "Emerging Subspecialties",
-      description: "Fastest growing specialties by compensation",
-      link: "/insights/emerging-specialties"
-    },
-    {
-      title: "Geographic Arbitrage",
-      description: "Best paying locations adjusted for cost of living",
-      link: "/insights/geographic-analysis"
-    }
-  ],
-
-  careerPathways: {
-    // Interactive career progression visualization
-    component: "SankeyDiagram",
-    data: "career_transitions.json",
-    onClick: (node) => navigate(`/career-paths/${node.id}`)
-  },
-
-  compensationBreakdown: {
-    // Comparative visualization
-    component: "TreeMap",
-    sections: [
-      "Base Salary",
-      "Clinical Bonuses",
-      "Academic Income",
-      "Industry Income"
-    ]
-  }
-}
-
-// Detailed Views Structure
-interface DetailedViews {
-  bySpecialty: {
-    mainMetrics: [
-      "Total Compensation Range",
-      "Experience-Based Growth",
-      "Gender Distribution",
-      "Work-Life Balance Score"
-    ],
-    comparisons: [
-      "vs. Similar Specialties",
-      "vs. National Average",
-      "vs. Previous Year"
-    ],
-    deepDives: {
-      productivityMetrics: {
-        RVUs: "Relative Value Units analysis",
-        patientVolume: "Patient load distribution",
-        procedureVolume: "Procedure frequency & compensation"
-      },
-      careerProgression: {
-        experienceLadder: "Pay by years of experience",
-        positionTransitions: "Common career moves",
-        timeToPartnership: "Partnership timeline"
-      },
-      geographicAnalysis: {
-        compensationHeatmap: "US heat map by region",
-        costAdjustedRankings: "Top locations by real income",
-        urbanVsRural: "Urban/rural compensation divide"
-      }
-    }
-  }
-}
-
-AI Integration Ideas:
-
-typescriptCopyinterface AIFeatures {
-  personalizedInsights: {
-    // Career Path Optimization
-    careerAdvisor: {
-      input: {
-        currentPosition: string,
-        yearsExperience: number,
-        preferences: string[]
-      },
-      output: {
-        recommendedPaths: Path[],
-        projectedEarnings: number[],
-        requiredSteps: string[]
-      }
-    },
-    
-    // Negotiation Assistant
-    compensationNegotiator: {
-      features: [
-        "Market position analysis",
-        "Compensation package evaluation",
-        "Negotiation strategy suggestions",
-        "Contract term comparisons"
-      ]
-    },
-    
-    // Competitive Analysis
-    marketPositioning: {
-      analysis: [
-        "Peer group comparison",
-        "Performance metrics benchmarking",
-        "Geographic opportunity scoring",
-        "Career trajectory prediction"
-      ]
-    }
-  },
-
-  dataAnalysis: {
-    // Pattern Recognition
-    trendPrediction: {
-      models: [
-        "Specialty demand forecasting",
-        "Compensation trend analysis",
-        "Geographic opportunity identification",
-        "Emerging subspecialty detection"
-      ]
-    },
-    
-    // Custom Reports
-    insightGenerator: {
-      reports: [
-        "Career optimization strategies",
-        "Location-based opportunities",
-        "Work-life balance analysis",
-        "Income diversification recommendations"
-      ]
-    }
-  },
-
-  interactiveTools: {
-    // Chatbot Career Advisor
-    careerGPT: {
-      capabilities: [
-        "Compensation negotiation coaching",
-        "Career path planning",
-        "Market trend analysis",
-        "Contract review assistance"
-      ]
-    },
-    
-    // Visual Data Explorer
-    dataVisualizer: {
-      features: [
-        "Custom comparison charts",
-        "Geographic heat maps",
-        "Career trajectory modeling",
-        "Peer group benchmarking"
-      ]
-    }
-  }
-}
-
 Novel AI Applications:
 
 
@@ -176,3 +11,42 @@ Market Timing Advisor: Suggests optimal times for career moves based on market c
 
 This would create a comprehensive platform that not only collects data but provides actionable insights and career guidance.
 Let me know if you want me to expand on any of these areas!
+
+Based on the code and the website's goal of providing salary transparency for medical professionals, here's a suggested expansion of pages and components:
+1. Career Insights Page
+Salary progression timeline by specialty
+Geographic heat maps of compensation
+Work-life balance metrics
+Interactive career pathway visualization (using the Sankey diagram mentioned in ideas.txt lines 29-34)
+Compensation Calculator
+Interactive tool where users can:
+Input their specialty, experience, location
+See predicted salary ranges
+Compare with national averages
+View cost of living adjustments
+Calculate take-home pay
+Resources Hub
+Specialty Deep Dives
+Detailed pages for each specialty (expanding on the structure in DetailedCompensationView.tsx lines 33-96)
+Training requirements
+Subspecialty comparisons
+Industry trends
+Fellowship impact on compensation
+Community Features
+Anonymous discussion forums by specialty
+Salary review submission guidelines
+Success stories
+Mentorship connections
+Data & Insights
+Annual compensation reports
+Industry trend analysis
+Gender pay gap statistics
+Academic vs Private practice comparisons
+Rural vs Urban compensation differences
+Profile Dashboard
+Enhanced Navigation
+Specialty-based navigation (similar to your existing NavBar.tsx but with additional categorization)
+Role-based pathways (Resident, Fellow, Attending, etc.)
+Experience level filters
+These additions would create a more comprehensive platform that serves medical professionals at various career stages while maintaining the core focus on compensation transparency.
+Would you like me to elaborate on any of these sections or provide specific component implementations?

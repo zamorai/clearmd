@@ -50,7 +50,7 @@ export function usePositionStats(
         }
 
         if (location) {
-          query = query.eq('locations.city', location);
+          query = query.eq('location_id', location);
         }
 
         const { data: salaries, error: salaryError } = await query;
